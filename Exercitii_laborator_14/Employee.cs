@@ -18,12 +18,12 @@ namespace Exercitii_laborator_14
         public double Salary { get => _salary; }
 
 
-        public Employee(string name, IDepartment department)
+        public Employee(string name, double baseSalary, IDepartment department)
         {
             _name = name;
             _id = Guid.NewGuid();
             _department = department;
-            _salary = department.BaseSalary;
+            _salary = baseSalary;
         }
 
 
@@ -38,7 +38,7 @@ namespace Exercitii_laborator_14
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine($"Employee name:  {Name}");
+            sb.AppendLine($"Employee name:  {Name} ");
             sb.AppendLine($"Employee ID:  {ID}");
             sb.AppendLine($"Employee Salary:  {Salary} lei");
             sb.AppendLine($"Employee Department:  {Department}");

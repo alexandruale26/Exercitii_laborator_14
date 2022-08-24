@@ -7,10 +7,6 @@ namespace Exercitii_laborator_14.Departments
         private readonly static LogisticsDepartment _instance = new LogisticsDepartment();
         public static LogisticsDepartment Instance { get => _instance; }
 
-        private readonly double _baseSalary = 5_000d;
-        public double BaseSalary => _baseSalary;
-
-
         private LogisticsDepartment() { }
 
 
