@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Exercitii_laborator_14.Departments;
+using System.Threading.Tasks;
 using Exercitii_laborator_14.Exceptions;
 
 namespace Exercitii_laborator_14
@@ -32,7 +32,7 @@ namespace Exercitii_laborator_14
                         o Adauga un angajat dat ca parametru
                     • RemoveEmployee
                         o Sterge un angajat in functie de ID-ul acestuia
-                    • GetNoOfWellPayedEmployees
+                    • GetNoOfWellPaidEmployees
                         o Metoda va primi ca parametru o valoare numerica si va returna o lista cu toti angajatii cu salariul mai mare decat valoarea numerica oferita ca parametru
                     • GetEmployeesByDepartment
                         o Va primi ca parametru un departament si va returna o lista cu toti angajatii din acel departament
@@ -67,97 +67,123 @@ namespace Exercitii_laborator_14
             #endregion
 
             #region Employees
-            Employee ana = new Employee("Ana", 5_100d, HumanResourcesDepartment.Instance);
-            Employee mihai = new Employee("Mihai", 7_000d, HumanResourcesDepartment.Instance);
-            Employee elena = new Employee("Elena", 6_800d, MaintenanceDepartment.Instance);
-            Employee dan = new Employee("Dan", 4_650d, TestingDepartment.Instance);
-            Employee irina = new Employee("Irina", 3_500d, TestingDepartment.Instance);
-            Employee tomita = new Employee("Tomita", 6_150d, MaintenanceDepartment.Instance);
-            Employee gicu = new Employee("Gicu", 5_700d, DevelopmentDepartment.Instance);
-            Employee anca = new Employee("Anca", 5_700d, DevelopmentDepartment.Instance);
-            Employee filip = new Employee("Filip", 4_970d, TestingDepartment.Instance);
-            Employee dorel = new Employee("Dorel", 4_970d, TestingDepartment.Instance);
-            Employee mirela = new Employee("Mirela", 4_230d, TestingDepartment.Instance);
-            Employee gabriela = new Employee("Gabriela", 4_970d, MaintenanceDepartment.Instance);
+            Employee ana = new Employee("Ana", 5_100d, Departments.HumanResources);
+            Employee mihai = new Employee("Mihai", 7_000d, Departments.HumanResources);
+            Employee elena = new Employee("Elena", 6_800d, Departments.Maintenance);
+            Employee dan = new Employee("Dan", 4_650d, Departments.Testing);
+            Employee irina = new Employee("Irina", 3_500d, Departments.Testing);
+            Employee tomita = new Employee("Tomita", 6_150d, Departments.Maintenance);
+            Employee gicu = new Employee("Gicu", 5_700d, Departments.Development);
+            Employee anca = new Employee("Anca", 5_700d, Departments.Development);
+            Employee filip = new Employee("Filip", 4_970d, Departments.Testing);
+            Employee dorel = new Employee("Dorel", 4_970d, Departments.Testing);
+            Employee mirela = new Employee("Mirela", 4_230d, Departments.Testing);
+            Employee gabriela = new Employee("Gabriela", 4_970d, Departments.Maintenance);
             #endregion
 
-            #region Adding employees
-            TryToAddEmployee(ana);
-            TryToAddEmployee(mihai);
-            TryToAddEmployee(elena);
-            TryToAddEmployee(dan);
-            TryToAddEmployee(irina);
-            TryToAddEmployee(tomita);
-            TryToAddEmployee(gicu);
-            TryToAddEmployee(anca);
-            TryToAddEmployee(filip);
-            TryToAddEmployee(dorel);
-            TryToAddEmployee(mirela);
-            TryToAddEmployee(gabriela);
-            Console.WriteLine();
-            #endregion
-
-            TryToAddEmployee(elena);
-            TryToAddEmployee(anca);
-            Console.WriteLine();
-
-
-            TryToRemoveLazyEmployee(mihai.ID);
-            TryToRemoveLazyEmployee(mihai.ID);
-            Console.WriteLine();
-
-
-            Console.WriteLine("These might be the best paid employees");
-            TryGetNoOfWellPayedEmployees(6_000d);
-            Console.WriteLine();
-
-
-            TryGetEmployeesByDepartment(HumanResourcesDepartment.Instance);
-            TryGetEmployeesByDepartment(LogisticsDepartment.Instance);
-            Console.WriteLine();
-
-
-            Console.WriteLine($"The Company is spending monthly {CompanyInc.Instance.GetTotalCost():N0} lei on salaries");
-            TryToGetCostForDepartment(TestingDepartment.Instance);
-            TryToGetCostForDepartment(HumanResourcesDepartment.Instance);
-            TryToGetCostForDepartment(LogisticsDepartment.Instance);
-            Console.WriteLine();
-
-
-            TryIncreasingSalary(mihai.ID, 10d);
-            TryIncreasingSalary(irina.ID, 15d);
-            TryIncreasingSalary(irina.ID, 11.6d);
-            Console.WriteLine();
-
-
-            TryIncreasingSalary(TestingDepartment.Instance, 12.5d);
-            TryIncreasingSalary(DevelopmentDepartment.Instance, 16.4d);
-            TryIncreasingSalary(LogisticsDepartment.Instance, 13.7d);
-            Console.WriteLine();
-
-
-            List<IDepartment> listOfDepartments = new List<IDepartment>
-            {   HumanResourcesDepartment.Instance, 
-                DevelopmentDepartment.Instance, 
-                LogisticsDepartment.Instance 
+            List<Departments> listOfDepartments = new List<Departments>
+            {   Departments.HumanResources,
+                Departments.Development,
+                Departments.Logistics
             };
 
-            TryIncreasingSalary(listOfDepartments, 7.5d);
-            Console.WriteLine();
+            Console.WriteLine("Start");
+            var t1 = Task.Factory.StartNew(() =>
+            {
+                TryToAddEmployee(ana);
+                TryToAddEmployee(mihai);
+                TryToAddEmployee(elena);
+                TryToAddEmployee(dan);
 
+            });
 
-            TryGetMaxSalary();
-            Console.WriteLine();
+            var t2 = Task.Factory.StartNew(() =>
+            {
+                TryToAddEmployee(irina);
+                TryToAddEmployee(tomita);
+                TryToAddEmployee(gicu);
+                TryToAddEmployee(anca);
+            });
 
-            TryGetMaxSalary(LogisticsDepartment.Instance);
-            Console.WriteLine();
-            TryGetMaxSalary(TestingDepartment.Instance);
-            Console.WriteLine();
+            var t3 = Task.Factory.StartNew(() =>
+            {
+                TryToRemoveLazyEmployee(mihai.ID);
+                TryToRemoveLazyEmployee(mihai.ID);
+            });
 
-            TryGetMaxSalary(listOfDepartments);
-            Console.WriteLine();
+            var t4 = Task.Factory.StartNew(() =>
+            {
+                TryGetEmployeesByDepartment(Departments.HumanResources);
+                TryGetEmployeesByDepartment(Departments.HumanResources);
+            });
 
-            // GetMaxSalaryByDepartment is already included in "TryGetMaxSalary(List<IDepartment> departments)"
+            var t5 = Task.Factory.StartNew(() =>
+            {
+                TryToAddEmployee(filip);
+                TryToAddEmployee(dorel);
+                TryToAddEmployee(mirela);
+                TryToAddEmployee(gabriela);
+            });
+
+            var t6 = Task.Factory.StartNew(() =>
+            {
+                Console.WriteLine("These might be the best paid employees");
+                TryGetNoOfWellPayedEmployees(6_000d);
+            });
+            
+            var t7 = Task.Factory.StartNew(() =>
+            {
+                TryToRemoveLazyEmployee(anca.ID);
+                TryToRemoveLazyEmployee(mihai.ID);
+            });
+
+            var t8 = Task.Factory.StartNew(() =>
+            {
+                TryGetMaxSalary(Departments.Logistics);
+                Console.WriteLine();
+                TryGetMaxSalary(Departments.Testing);
+            });
+
+            var t9 = Task.Factory.StartNew(() =>
+            {
+                TryToAddEmployee(elena);
+                TryToAddEmployee(anca);
+                TryToRemoveLazyEmployee(irina.ID);
+            });
+
+            var t10 = Task.Factory.StartNew(() =>
+            {
+                TryIncreasingSalary(Departments.Testing, 12.5d);
+                TryIncreasingSalary(Departments.Development, 16.4d);
+                TryIncreasingSalary(Departments.Logistics, 13.7d);
+            });
+
+            var t11 = Task.Factory.StartNew(() =>
+            {
+                TryGetMaxSalary(listOfDepartments);
+                TryGetMaxSalary();
+                TryIncreasingSalary(listOfDepartments, 7.5d);
+            });
+
+            var t12 = Task.Factory.StartNew(() =>
+            {
+                TryIncreasingSalary(mihai.ID, 10d);
+                TryIncreasingSalary(irina.ID, 15d);
+                TryIncreasingSalary(irina.ID, 11.6d);
+            });
+
+            var t13 = Task.Factory.StartNew(() =>
+            {
+                Console.WriteLine($"The Company is spending monthly {CompanyInc.Instance.GetTotalCost():N0} lei on salaries");
+                TryToGetCostForDepartment(Departments.Testing);
+                TryToGetCostForDepartment(Departments.HumanResources);
+                TryToGetCostForDepartment(Departments.Logistics);
+            });
+
+            Task[] tasks = {t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13};
+            Task.WaitAll(tasks);
+
+            Console.WriteLine("End");
         }
 
         #region Methods
@@ -191,7 +217,7 @@ namespace Exercitii_laborator_14
         {
             try
             {
-                CompanyInc.Instance.GetNoOfWellPayedEmployees(minimumSalary).ForEach(e => Console.WriteLine(e));
+                CompanyInc.Instance.GetNoOfWellPaidEmployees(minimumSalary).ForEach(e => Console.WriteLine(e));
             }
             catch (NoWellPaidEmployeesExistInCompanyException e)
             {
@@ -199,7 +225,7 @@ namespace Exercitii_laborator_14
             }
         }
         
-        static void TryGetEmployeesByDepartment(IDepartment department)
+        static void TryGetEmployeesByDepartment(Departments department)
         {
             try
             {
@@ -226,7 +252,7 @@ namespace Exercitii_laborator_14
             }
         }
 
-        static void TryGetMaxSalary(IDepartment department)
+        static void TryGetMaxSalary(Departments department)
         {
             try
             {
@@ -245,12 +271,12 @@ namespace Exercitii_laborator_14
             }
         }
 
-        static void TryGetMaxSalary(List<IDepartment> departments)
+        static void TryGetMaxSalary(List<Departments> departments)
         {
             departments.ForEach(d => TryGetMaxSalary(d));
         }
 
-        static void TryToGetCostForDepartment(IDepartment department)
+        static void TryToGetCostForDepartment(Departments department)
         {
 
             try
@@ -280,7 +306,7 @@ namespace Exercitii_laborator_14
             }
         }
 
-        static void TryIncreasingSalary(IDepartment department, double increasePercentage)
+        static void TryIncreasingSalary(Departments department, double increasePercentage)
         {
             try
             {
@@ -293,7 +319,7 @@ namespace Exercitii_laborator_14
             }
         }
 
-        static void TryIncreasingSalary(List<IDepartment> departments, double increasePercentage)
+        static void TryIncreasingSalary(List<Departments> departments, double increasePercentage)
         {
             departments.ForEach(d => TryIncreasingSalary(d, increasePercentage));
         }

@@ -1,29 +1,27 @@
 ﻿using System;
 using System.Text;
-using Exercitii_laborator_14.Departments;
 
 
 namespace Exercitii_laborator_14
 {
     class Employee
     {
-        private readonly string _name;
-        private readonly Guid _id;
-        private readonly IDepartment _department;
-        private double _salary;
+        private readonly string name;
+        private readonly Guid id;
+        private readonly Departments department;
+        private double salary;
 
-        public string Name { get => _name; }
-        public Guid ID { get => _id; }
-        public IDepartment Department { get => _department; }
-        public double Salary { get => _salary; }
+        public string Name { get => name; }
+        public Guid ID { get => id; }
+        public Departments Department { get => department; }
+        public double Salary { get => salary; }
 
-
-        public Employee(string name, double baseSalary, IDepartment department)
+        public Employee(string name, double baseSalary, Departments department)
         {
-            _name = name;
-            _id = Guid.NewGuid();
-            _department = department;
-            _salary = baseSalary;
+            this.name = name;
+            id = Guid.NewGuid();
+            this.department = department;
+            salary = baseSalary;
         }
 
 
@@ -31,8 +29,7 @@ namespace Exercitii_laborator_14
         /// Mareste salariul angajatului cu un anumit procent
         /// </summary>
         /// <param name="raisePercentage">Procentul cu care se va mari salariul</param>
-        public void RaiseSalary(double raisePercentage) => _salary += _salary * raisePercentage / 100d;
-
+        public void RaiseSalary(double raisePercentage) => salary += salary * raisePercentage / 100d;
 
         public override string ToString()
         {

@@ -1,18 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using Exercitii_laborator_14.Departments;
+using System.Linq;
 using Exercitii_laborator_14.Exceptions;
 
 namespace Exercitii_laborator_14
 {
     class CompanyInc
     {
-        private readonly static CompanyInc _instance = new CompanyInc();
-        public static CompanyInc Instance { get => _instance; }
+        private static CompanyInc instance;
+        private static readonly object locker = new object();
+        public static CompanyInc Instance {
+            get
+            {
+                if (instance == null)
+                {
+                    lock (locker)
+                    {
+                        if (instance == null)
+                        {
+                            instance = new CompanyInc();
+                        }
+                    }
+                }
+                return instance;
+            } 
+        }
 
-        private readonly List<Employee> _companyEmployees = new List<Employee>();
-        public List<Employee> CompanyEmployees { get => _companyEmployees; } //is not used but might be usefull later on
-
+        private readonly List<Employee> companyEmployees = new List<Employee>();
 
         private CompanyInc() { }
 
@@ -23,14 +37,17 @@ namespace Exercitii_laborator_14
         /// <param name="luckyNewEmployee">The LUCKIEST man alive</param>
         public void AddEmployee(Employee luckyNewEmployee)
         {
-            _companyEmployees.ForEach(e =>
+            lock (locker)
             {
-                if (e.ID == luckyNewEmployee.ID)
+                companyEmployees.ForEach(e =>
                 {
-                    throw new EmployeeAlreadyExistsException();
-                }
-            });
-            _companyEmployees.Add(luckyNewEmployee);
+                    if (e.ID == luckyNewEmployee.ID)
+                    {
+                        throw new EmployeeAlreadyExistsException();
+                    }
+                });
+                companyEmployees.Add(luckyNewEmployee);
+            }
         }
 
 
@@ -40,16 +57,18 @@ namespace Exercitii_laborator_14
         /// <param name="luckyNewEmployee">The UNLUCKIEST man alive</param>
         public Employee RemoveEmployee(Guid employeeID)
         {
-            Employee employeeToRemove = _companyEmployees.Find(e => e.ID == employeeID);
-
-            if (employeeToRemove == null)
+            lock(locker)
             {
-                throw new EmployeeNotExistingException();
+                Employee employeeToRemove = companyEmployees.Find(e => e.ID == employeeID);
+
+                if (employeeToRemove == null)
+                {
+                    throw new EmployeeNotExistingException();
+                }
+
+                companyEmployees.Remove(employeeToRemove);
+                return employeeToRemove;
             }
-
-            _companyEmployees.Remove(employeeToRemove);
-            return employeeToRemove;
-
         }
 
 
@@ -58,15 +77,18 @@ namespace Exercitii_laborator_14
         /// </summary>
         /// <param name="department"></param>
         /// <returns>The well paid employees</returns>
-        public List<Employee> GetNoOfWellPayedEmployees(double minimumSalary)
+        public List<Employee> GetNoOfWellPaidEmployees(double minimumSalary)
         {
-            List<Employee> employees = _companyEmployees.FindAll(e => e.Salary > minimumSalary);
-
-            if (employees.Count == 0)
+            lock (locker)
             {
-                throw new NoWellPaidEmployeesExistInCompanyException();
+                List<Employee> employees = companyEmployees.FindAll(e => e.Salary > minimumSalary);
+
+                if (employees.Count == 0)
+                {
+                    throw new NoWellPaidEmployeesExistInCompanyException();
+                }
+                return employees;
             }
-            return employees;
         }
 
 
@@ -75,15 +97,18 @@ namespace Exercitii_laborator_14
         /// </summary>
         /// <param name="department"></param>
         /// <returns>Department employees</returns>
-        public List<Employee> GetEmployeesByDepartment(IDepartment department)
+        public List<Employee> GetEmployeesByDepartment(Departments department)
         {
-            List<Employee> employees = _companyEmployees.FindAll(e => e.Department == department);
-
-            if (employees.Count == 0)
+            lock (locker)
             {
-                throw new NoEmployeesExistInDepartmentException();
+                List<Employee> employees = companyEmployees.FindAll(e => e.Department == department);
+
+                if (employees.Count == 0)
+                {
+                    throw new NoEmployeesExistInDepartmentException();
+                }
+                return employees;
             }
-            return employees;
         }
 
 
@@ -93,11 +118,14 @@ namespace Exercitii_laborator_14
         /// <returns>The well paid employee</returns>
         public List<Employee> GetMaxSalary()
         {
-            if (_companyEmployees.Count == 0)
+            lock (locker)
             {
-                throw new NoEmployeesExistInCompanyException();
+                if (companyEmployees.Count == 0)
+                {
+                    throw new NoEmployeesExistInCompanyException();
+                }
+                return GetBestPaidEmployee(companyEmployees);
             }
-            return GetBestPaidEmployee(_companyEmployees);
         }
 
 
@@ -106,20 +134,23 @@ namespace Exercitii_laborator_14
         /// </summary>
         /// <param name="department"></param>
         /// <returns>The well paid employees</returns>
-        public List<Employee> GetMaxSalary(IDepartment department)
+        public List<Employee> GetMaxSalary(Departments department)
         {
-            if (_companyEmployees.Count == 0)
+            lock (locker)
             {
-                throw new NoEmployeesExistInCompanyException();
-            }
+                if (companyEmployees.Count == 0)
+                {
+                    throw new NoEmployeesExistInCompanyException();
+                }
 
-            List<Employee> departmentEmployees = _companyEmployees.FindAll(e => e.Department == department);
+                List<Employee> departmentEmployees = companyEmployees.FindAll(e => e.Department == department);
 
-            if (departmentEmployees.Count == 0)
-            {
-                throw new NoEmployeesExistInDepartmentException();
+                if (departmentEmployees.Count == 0)
+                {
+                    throw new NoEmployeesExistInDepartmentException();
+                }
+                return GetBestPaidEmployee(departmentEmployees);
             }
-            return GetBestPaidEmployee(departmentEmployees);
         }
 
 
@@ -128,13 +159,16 @@ namespace Exercitii_laborator_14
         /// </summary>
         /// <param name="department"></param>
         /// <returns>The well paid employees</returns>
-        public List<Employee> GetMaxSalary(List<IDepartment> departaments)
+        public List<Employee> GetMaxSalary(List<Departments> departaments)
         {
-            List<Employee> employees = new List<Employee>();
+            lock (locker)
+            {
+                List<Employee> employees = new List<Employee>();
 
-            departaments.ForEach(d => employees.AddRange(GetMaxSalary(d)));
+                departaments.ForEach(d => employees.AddRange(GetMaxSalary(d)));
 
-            return employees;
+                return employees;
+            }
         }
 
 
@@ -144,13 +178,10 @@ namespace Exercitii_laborator_14
         /// <returns>Sum of salaries</returns>
         public double GetTotalCost()
         {
-            double cost = 0d;
-
-            _companyEmployees.ForEach(e =>
+            lock (locker)
             {
-                cost += e.Salary;
-            });
-            return cost;
+                return companyEmployees.Sum(e => e.Salary);
+            }
         }
 
 
@@ -158,12 +189,12 @@ namespace Exercitii_laborator_14
         /// Returns the sum of salaries in a departement
         /// </summary>
         /// <returns>Sum of salaries in department</returns>
-        public double GetCostForDepartment(IDepartment department)
+        public double GetCostForDepartment(Departments department)
         {
-            double cost = 0d;
-
-            GetEmployeesByDepartment(department).ForEach(e => cost += e.Salary);
-            return cost;
+            lock (locker)
+            {
+                return GetEmployeesByDepartment(department).Sum(e => e.Salary);
+            }
         }
 
 
@@ -174,60 +205,69 @@ namespace Exercitii_laborator_14
         /// <param name="percent"></param>
         public void IncreaseSalary(Guid employeeID, double increasePercentage)
         {
-            Employee luckyEmployee =  _companyEmployees.Find(e => e.ID == employeeID);
-
-            if (luckyEmployee == null)
+            lock (locker)
             {
-                throw new EmployeeNotExistingException();
-            }
+                Employee luckyEmployee = companyEmployees.Find(e => e.ID == employeeID);
 
-            luckyEmployee.RaiseSalary(increasePercentage);
+                if (luckyEmployee == null)
+                {
+                    throw new EmployeeNotExistingException();
+                }
+
+                luckyEmployee.RaiseSalary(increasePercentage);
+            }
         }
 
 
         /// <summary>
-        /// Increase department companyEmployees salaries
+        /// Increase department company Employees salaries
         /// </summary>
         /// <param name="department"></param>
         /// <param name="increasePercentage"></param>
-        public void IncreaseSalary(IDepartment department, double increasePercentage)
+        public void IncreaseSalary(Departments department, double increasePercentage)
         {
-            List<Employee> luckyEmployees = _companyEmployees.FindAll(e => e.Department == department);
-
-            if (luckyEmployees.Count == 0)
+            lock (locker)
             {
-                throw new NoEmployeesExistInDepartmentException();
-            }
+                List<Employee> luckyEmployees = companyEmployees.FindAll(e => e.Department == department);
 
-            luckyEmployees.ForEach(e => e.RaiseSalary(increasePercentage));
+                if (luckyEmployees.Count == 0)
+                {
+                    throw new NoEmployeesExistInDepartmentException();
+                }
+
+                luckyEmployees.ForEach(e => e.RaiseSalary(increasePercentage));
+            }
         }
 
 
         /// <summary>
-        /// Increase departments companyEmployees salaries
+        /// Increase departments company Employees salaries
         /// </summary>
         /// <param name="departments">The list of departments to raise salaries</param>
         /// <param name="increasePercentage"></param>
         /// <exception cref="NoEmployeesExistInDepartmentException"></exception>
-        public void IncreaseSalary(List<IDepartment> departments, double increasePercentage)
+        public void IncreaseSalary(List<Departments> departments, double increasePercentage)
         {
-            departments.ForEach(d => IncreaseSalary(d, increasePercentage));
+            lock (locker)
+            {
+                departments.ForEach(d => IncreaseSalary(d, increasePercentage));
+            }
         }
 
 
+        /// <summary>
+        /// Returns the best paid Employees in the company
+        /// </summary>
+        /// <param name="companyEmployees">The list of the best paid Employees in the company</param>
+        /// <returns></returns>
         private List<Employee> GetBestPaidEmployee(List<Employee> companyEmployees)
         {
-            double bestSalary = companyEmployees[0].Salary; 
-
-            companyEmployees.ForEach(e =>
+            lock (locker)
             {
-                if (e.Salary > bestSalary)
-                {
-                    bestSalary = e.Salary;
-                }
-            });
+                double bestSalary = companyEmployees.Max(e => e.Salary);
 
-            return companyEmployees.FindAll(e => e.Salary == bestSalary);
+                return companyEmployees.FindAll(e => e.Salary == bestSalary);
+            }
         }
     }
 }
